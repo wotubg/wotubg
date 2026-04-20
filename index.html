@@ -2,38 +2,189 @@
 <html lang="en">
 <head>
 <script>
-(function(){
-    if(window.__wotubg_iframe) return;
-    if(localStorage.getItem("blankTab") === "false") return;
+(function () {
+    if (window.top !== window) return;
+    if (sessionStorage.getItem("blankOpened") === "1") return;
+    if (localStorage.getItem("blankTab") === "false") return;
+
     var orig = window.location.href;
-    var w = window.open('about:blank', '_blank');
-    if(w){
-        w.document.open();
-        w.document.write(
-            '<!DOCTYPE html><html><head><style>' +
-            '*{margin:0;padding:0;border:0;}' +
-            'html,body{width:100%;height:100%;overflow:hidden;background:#020617;}' +
-            'iframe{width:100%;height:100%;display:block;}' +
-            '</style></head><body>' +
-            '<iframe id="wotubg_frame" src="' + orig + '" allowfullscreen __wotubg_iframe="1"></iframe>' +
-            '<script>' +
-            'var f=document.getElementById("wotubg_frame");' +
-            // Focus iframe immediately and whenever the outer window regains focus
-            'f.addEventListener("load",function(){try{f.contentWindow.focus();}catch(e){}});' +
-            'window.addEventListener("focus",function(){try{f.contentWindow.focus();}catch(e){}});' +
-            // Intercept F5/Ctrl+R/Cmd+R on the outer window as a fallback
-            'window.addEventListener("beforeunload",function(e){e.preventDefault();e.returnValue="";return "";});' +
-            'window.addEventListener("keydown",function(e){' +
-            'if(e.key==="F5"||(e.ctrlKey&&e.key==="r")||(e.metaKey&&e.key==="r")){' +
-            'e.preventDefault();' +
-            'try{f.contentWindow.location.reload();}catch(err){}' +
-            '}});' +
-            '<\/script>' +
-            '</body></html>'
-        );
-        w.document.close();
-        setTimeout(function(){ window.close(); }, 200);
+
+    function doBlankTab() {
+        var w = window.open('about:blank', '_blank');
+        if (w) {
+            w.document.open();
+            w.document.write(
+                '<!DOCTYPE html><html><head><style>' +
+                '*{margin:0;padding:0;border:0;}' +
+                'html,body{width:100%;height:100%;overflow:hidden;background:#020617;}' +
+                'iframe{width:100%;height:100%;display:block;}' +
+                '</style></head><body>' +
+                '<iframe id="wotubg_frame" src="' + orig + '" allowfullscreen __wotubg_iframe="1"></iframe>' +
+                '<script>' +
+                'var f=document.getElementById("wotubg_frame");' +
+                'f.addEventListener("load",function(){try{f.contentWindow.focus();}catch(e){}});' +
+                'window.addEventListener("focus",function(){try{f.contentWindow.focus();}catch(e){}});' +
+                'window.addEventListener("beforeunload",function(e){e.preventDefault();e.returnValue="";return "";});' +
+                'window.addEventListener("keydown",function(e){' +
+                'if(e.key==="F5"||(e.ctrlKey&&e.key==="r")||(e.metaKey&&e.key==="r")){' +
+                'e.preventDefault();' +
+                'try{f.contentWindow.location.reload();}catch(err){}' +
+                '}});' +
+                '<\/script>' +
+                '</body></html>'
+            );
+            w.document.close();
+            setTimeout(function () { window.close(); }, 200);
+        }
     }
+
+    // --- POPUP DETECTION ---
+    // Open a tiny invisible test popup
+    var test = window.open('', '_blank', 'width=1,height=1,left=-9999,top=-9999');
+
+    if (test && !test.closed) {
+        // Popups allowed — close test and do the real thing
+        test.close();
+        sessionStorage.setItem("blankOpened", "1");
+doBlankTab();
+        return;
+    }
+
+    // Popups are blocked — inject a styled notice into the page once it loads
+    function showPopupBlockedBanner() {
+        // Don't show if the page doesn't have a body yet
+        if (!document.body) {
+            document.addEventListener('DOMContentLoaded', showPopupBlockedBanner);
+            return;
+        }
+
+        // Detect browser to show specific instructions
+        var ua = navigator.userAgent;
+        var isFirefox = ua.indexOf('Firefox') > -1;
+        var isEdge    = ua.indexOf('Edg/') > -1;
+        var isSafari  = ua.indexOf('Safari') > -1 && ua.indexOf('Chrome') === -1;
+
+        var steps = '';
+        if (isFirefox) {
+            steps =
+                '<li>Click the <strong>blocked popup icon</strong> in the address bar (far right)</li>' +
+                '<li>Select <strong>"Allow popups for this page"</strong></li>' +
+                '<li>Click <strong>Try Again</strong> below</li>';
+        } else if (isEdge) {
+            steps =
+                '<li>Click the <strong>popup blocked icon</strong> in the address bar</li>' +
+                '<li>Toggle <strong>"Always allow popups from this site"</strong></li>' +
+                '<li>Click <strong>Try Again</strong> below</li>';
+        } else if (isSafari) {
+            steps =
+                '<li>Go to <strong>Safari → Settings for This Website</strong></li>' +
+                '<li>Set <strong>Pop-up Windows</strong> to <em>Allow</em></li>' +
+                '<li>Reload the page</li>';
+        } else {
+            // Chrome (default)
+            steps =
+                '<li>Click the <strong>pop-up blocked icon</strong> in the top-right of the address bar</li>' +
+                '<li>Select <strong>"Always allow pop-ups from this site"</strong></li>' +
+                '<li>Click <strong>Try Again</strong> below</li>';
+        }
+
+        var banner = document.createElement('div');
+        banner.id = 'popupBlockedBanner';
+        banner.style.cssText = [
+            'position:fixed',
+            'top:0', 'left:0', 'right:0', 'bottom:0',
+            'z-index:9999999',
+            'display:flex',
+            'align-items:center',
+            'justify-content:center',
+            'background:rgba(2,6,23,0.95)',
+            'backdrop-filter:blur(16px)',
+            'font-family:Rubik,sans-serif',
+            'padding:20px'
+        ].join(';');
+
+        banner.innerHTML = [
+            '<div style="',
+                'background:linear-gradient(160deg,#0e2a52ee,#08112fee);',
+                'border:1px solid rgba(96,165,250,0.2);',
+                'border-radius:18px;',
+                'padding:32px 28px;',
+                'max-width:400px;',
+                'width:100%;',
+                'box-shadow:0 30px 80px rgba(0,0,0,0.8);',
+                'position:relative;',
+                'overflow:hidden;',
+            '">',
+                '<div style="position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,rgba(96,165,250,0.5),transparent);"></div>',
+                '<div style="font-size:36px;margin-bottom:14px;">🚫</div>',
+                '<div style="font-size:17px;font-weight:700;color:#e0e7ff;margin-bottom:6px;letter-spacing:0.3px;">Popups are Blocked</div>',
+                '<div style="font-size:12px;color:rgba(96,165,250,0.8);letter-spacing:2px;margin-bottom:20px;font-family:JetBrains Mono,monospace;text-transform:uppercase;">Action Required</div>',
+                '<div style="font-size:12.5px;color:rgba(203,213,245,0.75);line-height:1.7;margin-bottom:20px;">',
+                    'This site opens in an <code style="background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.2);border-radius:4px;padding:1px 6px;font-family:JetBrains Mono,monospace;color:#93c5fd;font-size:11px;">about:blank</code> tab to hide the URL. Your browser is blocking that. To fix it:',
+                '</div>',
+                '<ol style="margin:0 0 24px 0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:12.5px;color:rgba(203,213,245,0.8);line-height:1.6;">',
+                    steps,
+                '</ol>',
+                '<div style="display:flex;gap:8px;">',
+                    '<button id="popupRetryBtn" style="',
+                        'flex:1;padding:11px;',
+                        'background:linear-gradient(135deg,#1e3a8a,#2563eb);',
+                        'border:1px solid rgba(96,165,250,0.25);',
+                        'border-radius:9px;',
+                        'color:white;',
+                        'font-family:Rubik,sans-serif;',
+                        'font-size:13px;font-weight:700;',
+                        'cursor:pointer;',
+                        'letter-spacing:0.5px;',
+                        'transition:all 0.2s;',
+                    '">↻ Try Again</button>',
+                    '<button id="popupDismissBtn" style="',
+                        'padding:11px 16px;',
+                        'background:rgba(203,213,245,0.06);',
+                        'border:1px solid rgba(203,213,245,0.1);',
+                        'border-radius:9px;',
+                        'color:rgba(203,213,245,0.7);',
+                        'font-family:Rubik,sans-serif;',
+                        'font-size:13px;',
+                        'cursor:pointer;',
+                        'transition:all 0.2s;',
+                    '">Skip</button>',
+                '</div>',
+                '<div style="font-size:10px;color:rgba(203,213,245,0.3);text-align:center;margin-top:14px;font-family:JetBrains Mono,monospace;letter-spacing:1px;">',
+                    'Clicking Skip keeps the page visible in the URL bar',
+                '</div>',
+            '</div>'
+        ].join('');
+
+        document.body.appendChild(banner);
+
+        document.getElementById('popupRetryBtn').addEventListener('click', function () {
+            var retry = window.open('', '_blank', 'width=1,height=1,left=-9999,top=-9999');
+            if (retry && !retry.closed) {
+                retry.close();
+                document.getElementById('popupBlockedBanner').remove();
+                doBlankTab();
+            } else {
+                // Still blocked — shake the button
+                var btn = document.getElementById('popupRetryBtn');
+                btn.textContent = '⚠ Still blocked';
+                btn.style.background = 'linear-gradient(135deg,#7f1d1d,#dc2626)';
+                setTimeout(function () {
+                    btn.textContent = '↻ Try Again';
+                    btn.style.background = 'linear-gradient(135deg,#1e3a8a,#2563eb)';
+                }, 1800);
+            }
+        });
+
+        document.getElementById('popupDismissBtn').addEventListener('click', function () {
+            document.getElementById('popupBlockedBanner').remove();
+            // Optionally remember to not try again this session:
+            // sessionStorage.setItem('popupSkipped', 'true');
+        });
+    }
+
+    showPopupBlockedBanner();
+
 })();
 </script>
     <meta charset="UTF-8">
@@ -701,6 +852,7 @@
             <button class="nav-item active" onclick="showSection('games')"><span class="icon">🎮</span><span class="nav-label">Games</span></button>
             <button class="nav-item" onclick="showSection('flash')"><span class="icon">⚡</span><span class="nav-label">Flash</span></button>
             <button class="nav-item" onclick="showSection('emulated')"><span class="icon">💾</span><span class="nav-label">Emulated</span></button>
+            <button class="nav-item" onclick="showSection('chatgpt')"><span class="icon">🤖</span><span class="nav-label">ChatGPT</span></button>
             <button class="nav-item" onclick="showSection('hidden')"><span class="icon">🔒</span><span class="nav-label">Hidden</span><span id="hiddenCount" class="nav-badge"></span></button>
            
 
@@ -796,6 +948,7 @@
         <div class="content-area" id="contentArea">
             <button id="scrollTopBtn" onclick="document.querySelector('.section.active').scrollTo({top:0,behavior:'smooth'});">↑</button>            <div class="section active" id="gamesSection"><div id="mainGrid" class="game-grid" style="padding:6px 4px 12px;"></div></div>
             <div class="section" id="emulatedSection"><div id="emulatedBox"></div></div>
+<div class="section" id="chatgptSection"><div id="chatgptBox"></div></div>
   <div class="section" id="flashSection">
     <div style="background:rgba(4,10,24,0.7);border:1px solid rgba(203,213,245,0.1);border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:13px;color:#CBD5F5;line-height:1.8;">
         You can have any flash game here (ending in .swf) just go to this link and download any you want <a href="https://archive.org/details/softwarelibrary_flash_games" target="_blank" style="color:#3b82f6;">https://archive.org/details/softwarelibrary_flash_games</a>
@@ -997,6 +1150,8 @@ const games=[
 [" Slope","games/slope.html","arcade","images/slope.png"],
 [" QWOP","games/qwop.html","arcade","images/qwop.png"],
 [" Agar.io","games/agariolite.html","arcade","images/agario.png"],
+[" Survivor.io","games/survivor.html","arcade","images/survivor.png"],
+[" Youtube Life OMG","games/youtube.html","arcade","images/youtube.png"],
 [" A Game About Feeding a Blackhole","games/agameaboutfeedingablackhole.html","arcade","images/agameaboutfeedingablackhole.png"],
 [" Burrito Bison","games/burritobison.html","arcade","images/burrito.png"],
 [" Awesome Tanks 2","games/tanks.html","action","images/awesometanks2.png"],
@@ -1009,6 +1164,7 @@ const games=[
 [" Tomb of The Mask","games/tombofthemask.html","arcade","images/tomb.png"],
 [" Outhold","games/outhold.html","strategy","images/outhold.png"],
 [" FISH","games/fish.html","action","images/fish.png"],
+[" Fih","games/fih.html","platformer","images/fih.png"],
 [" Your Only Move is HUSTLE","games/hustle.html","action","images/hustle.png"],
 [" Cluster Truck","games/clustertruck.html","platformer","images/clustertruck.png"],
 [" Gunspin","games/gunspin.html","idle","images/gunspin.png"],
@@ -1019,11 +1175,12 @@ const games=[
 [" Shift at Midnight","games/shift.html","horror","images/shiftatmidnight.png"],
 [" Bad Parenting","games/bad_parenting.html","horror","images/badparenting.png"],
 [" Slender: The Eight Pages","games/slender.html","horror","images/slender.png"],
+[" Slendytubbies","games/slendytubbies.html","horror","images/slendytubbies.png"],
 [" Balatro","games/balatro.html","strategy","images/balatro.png"],
+[" Tattletail","games/tattletail.html","horror","images/tattletail.png"],
 [" Deadseat","games/Deadseat.html","horror","images/deadseat.png"],
 [" They Are Coming","games/theyarecoming.html","action","images/theyarecoming.png"],
 [" Arthur's Nightmare","games/arthur.html","horror","images/arthur.png"],
-[" Tattle Tail","games/Tattletail.html","horror","images/tattletail.png"],
 [" The Man From The Window","games/window.html","horror","images/window.png"],
 [" Resident Evil","games/residentevil.html","horror","images/residentevil.png"],
 [" Resident Evil 2","games/residentevil2.html","horror","images/residentevil2.png"],
@@ -1033,6 +1190,7 @@ const games=[
 [" Kindergarten","games/kindergarten.html","strategy","images/kindergarten.png"],
 [" Kindergarten 2","games/kinder2.html","strategy","images/kindergarten2.png"],
 [" Kindergarten 3","games/kinder3.html","strategy","images/kindergarten3.png"],
+[" Plants Vs. Zombies","games/pvz.html","strategy","images/pvz.png"],
 [" Plants Vs. Zombies 2","games/pvz2.html","strategy","images/pvz2.png"],
 [" Gun Mayhem 2","games/gunmayhem2.html","multiplayer","images/gunmayhem2.png"],
 [" Tag","games/tag.html","multiplayer","images/tag.png"],
@@ -1066,6 +1224,7 @@ const games=[
 [" The Binding of Isaac Wrath Of The Lamb","games/tboir.html","action","images/tboir.png"],
 [" Alien Hominid","games/alien.html","action","images/hominid.png"],
 [" Bendy and The Ink Machine","games/bendy.html","horror","images/bendy.png"],
+[" OMORI","games/omori.html","action","images/omori.png"],
 [" Undertale","games/undertale/index.html","action","images/undertale.png"],
 [" Deltarune","games/deltarune.html","action","images/deltarune.png"],
 [" Terraria","games/terraria.html","action","images/terraria.png"],
@@ -1148,6 +1307,7 @@ const hiddenGames=[
 [" DOOM 2","games/doom2.html","action","images/doom2.png"],
 [" Quake 3 Arena","games/quak3.html","action","images/quak3arena.png"],
 [" Quake 64","games/quak64.html","action","images/quak64.png"],
+[" GTA Vice City","games/vice.html","action","images/vice.png"],
 [" Buckshot Roulette","games/buckshot.html","strategy","images/buckshot.png"],
 [" Ultrakill","games/ultrakill.html","action","images/ultrakill.png"],
 [" Happy Wheels","games/happy.html","platformer","images/happy.png"],
@@ -1373,6 +1533,12 @@ function renderEmulated(){
     if(!emulated.length){box.appendChild(emptyEl("💾","No emulated games"));return;}
     const list=emulated.map(g=>({href:g[1],img:g[2],label:g[0],key:g[0]+"|"+g[1]}));
     box.appendChild(makeTileGrid(list, renderEmulated));
+}
+
+function renderChatGPT(){
+    const box=document.getElementById("chatgptBox"); box.innerHTML="";
+    const list=[{href:"games/chatgpt.html",img:"images/chatgpt.png",label:" ChatGPT",key:" ChatGPT|games/chatgpt.html"}];
+    box.appendChild(makeTileGrid(list, renderChatGPT));
 }
 
 function renderFlash(){
@@ -1815,6 +1981,7 @@ document.querySelectorAll(".game-item").forEach(d=>d.style.display="flex");
     if(name==="hidden")renderHidden();
     if(name==="emulated")renderEmulated();
     if(name==="flash")renderFlash();
+    if(name==="chatgpt")renderChatGPT();
     if(name==="recent")renderRecent();
     if(name==="gameoftheday")renderGOTD();
     if(name==="proxies")renderProxies();
