@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<base href="https://cdn.jsdelivr.net/gh/Reeyuki/PlagueIncEvolved/">
+<title>Plague Inc: Evolved</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+
+  #unity-canvas {
+    width: 100vw; height: 100vh;
+    display: block;
+    position: absolute; top: 0; left: 0;
+  }
+
+  #loader {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+    z-index: 9999;
+    transition: opacity 0.6s ease;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  #loader.fade { opacity: 0; pointer-events: none; }
+
+  .icon { font-size: 68px; animation: glow 2s ease-in-out infinite; }
+  @keyframes glow {
+    0%,100% { filter: drop-shadow(0 0 18px rgba(74,222,128,.4)); transform: scale(1); }
+    50%      { filter: drop-shadow(0 0 38px rgba(74,222,128,.8)); transform: scale(1.06); }
+  }
+
+  .title { font-size: 24px; font-weight: 700; color: #e0ffe0; letter-spacing: 3px; text-transform: uppercase;}
+  .sub   { font-size: 10px; color: rgba(74,222,128,.5); letter-spacing: 4px; text-transform: uppercase; font-family: monospace; }
+
+  .bar-wrap { width: 320px; height: 5px; background: rgba(255,255,255,.07); border-radius: 3px; overflow: hidden; }
+  #fill { height: 100%; width: 0%; background: linear-gradient(90deg, #166534, #4ade80); transition: width .25s; box-shadow: 0 0 10px rgba(74,222,128,.6); }
+
+  #mb   { font-size: 12px; color: rgba(74,222,128,.7); font-family: monospace; letter-spacing: 1px; }
+
+  .notice {
+    background: rgba(255,255,255,.03); border: 1px solid rgba(74,222,128,.1);
+    border-radius: 8px; padding: 9px 16px;
+    font-size: 10px; color: rgba(255,255,255,.28); text-align: center;
+    max-width: 320px; line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="title">Plague Inc: Evolved</div>
+  <div class="bar-wrap"><div id="fill"></div></div>
+  <div id="mb">0 MB / 300 MB</div>
+  <div class="notice">
+    Game isn't ported by WOT-UBG but the file was made by us.
+  </div>
+</div>
+
+<canvas id="unity-canvas"></canvas>
+
+<!-- ── EXACT ORIGINAL SCRIPT (unchanged) ── -->
+<script src="Build/bb0d9ecdb05db3e84da20bd14a4f84dc.loader.js"></script>
+<script>
+const baseBuild = "https://cdn.jsdelivr.net/gh/Reeyuki/PlagueIncEvolved/Build/"
+const base      = "https://cdn.jsdelivr.net/gh/Reeyuki/PlagueIncEvolved/"
+
+let loaded = 0
+let totalGuess = 317 * 1024 * 1024
+
+function update() {
+  const mb    = (loaded / 1024 / 1024).toFixed(1)
+  const total = (totalGuess / 1024 / 1024).toFixed(0)
+  document.getElementById("mb").textContent   = mb + " MB / " + total + " MB"
+  document.getElementById("fill").style.width = (loaded / totalGuess * 100) + "%"
+}
+
+async function fetchPart(url) {
+  const res = await fetch(url)
+  if (!res.ok) return null
+  const buf = await res.arrayBuffer()
+  loaded += buf.byteLength
+  update()
+  return new Uint8Array(buf)
+}
+
+/* CONFIG ONLY */
+const files = [
+  { name: "6b69ec426bff8a6bd4e760a1d5f507b9.wasm", parts: 2  },
+  { name: "3719aa6c33bf126ed64864ee5fc2fafc.data",  parts: 15 }
+]
+
+function buildUrls(file) {
+  const urls = []
+  for (let i = 0; i < file.parts; i++) {
+    urls.push(baseBuild + file.name + ".part" + String(i).padStart(2, "0"))
+  }
+  return urls
+}
+
+async function loadFile(file) {
+  const urls    = buildUrls(file)
+  const buffers = await Promise.all(urls.map(fetchPart))
+  let size = 0
+  for (const b of buffers) size += b.byteLength
+  const out = new Uint8Array(size)
+  let off = 0
+  for (const b of buffers) { out.set(b, off); off += b.byteLength }
+  return out.buffer
+}
+
+async function start() {
+  const wasmFile = files[0]
+  const dataFile = files[1]
+
+  const wasmPromise = loadFile(wasmFile)
+  const dataPromise = loadFile(dataFile)
+
+  const [wasm, data] = await Promise.all([wasmPromise, dataPromise])
+
+  const wasmUrl = URL.createObjectURL(new Blob([wasm], { type: "application/wasm" }))
+  const dataUrl = URL.createObjectURL(new Blob([data]))
+
+  /* hide loader */
+  const loader = document.getElementById("loader")
+  loader.classList.add("fade")
+  setTimeout(() => { loader.style.display = "none" }, 650)
+
+  createUnityInstance(document.querySelector("#unity-canvas"), {
+    dataUrl:            dataUrl,
+    frameworkUrl:       baseBuild + "b4b58f3ff6d98fbfb83482e25e0e9a5c.framework.js",
+    codeUrl:            wasmUrl,
+    streamingAssetsUrl: base + "StreamingAssets",
+    companyName:        "Ndemic Creations",
+    productName:        "Plague Inc",
+    productVersion:     "1.18.3.2"
+  })
+}
+
+start()
+</script>
+</body>
+</html>
