@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta charset="UTF-8">
+<title>Google</title>
 <script>
 (function () {
     if (window.top !== window) return;
@@ -176,8 +178,6 @@ doBlankTab();
 
 })();
 </script>
-    <meta charset="UTF-8">
-    <title>Google</title>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1019,7 +1019,7 @@ doBlankTab();
                 </div>
                 <div style="margin-bottom:10px;">
                     <label style="font-size:11px;color:#CBD5F5;display:block;margin-bottom:6px;">Do you have a link? If so put it here</label>
-                    <input id="suggestGenre" type="text" placeholder="https://..." style="width:100%;padding:10px 14px;background:rgba(4,10,24,0.8);border:1px solid rgba(203,213,245,0.1);color:#e0e7ff;border-radius:8px;font-family:'Rubik',sans-serif;font-size:13px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--a)'" onblur="this.style.borderColor='rgba(203,213,245,0.1)'">
+                    <input id="suggestLink" type="text" placeholder="https://..." style="width:100%;padding:10px 14px;background:rgba(4,10,24,0.8);border:1px solid rgba(203,213,245,0.1);color:#e0e7ff;border-radius:8px;font-family:'Rubik',sans-serif;font-size:13px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--a)'" onblur="this.style.borderColor='rgba(203,213,245,0.1)'">
                 </div>
                 <div style="margin-bottom:14px;">
                     <label style="font-size:11px;color:#CBD5F5;display:block;margin-bottom:6px;">Any bugs or games not working?</label>
@@ -1060,8 +1060,16 @@ doBlankTab();
 let gameNotes=JSON.parse(localStorage.getItem("gameNotes")||"{}");
 let pinnedGames=JSON.parse(localStorage.getItem("pinnedGames")||"[]");
 const canvas=document.getElementById("bgCanvas"),ctx=canvas.getContext("2d");
-function resizeCanvas(){canvas.width=innerWidth;canvas.height=innerHeight;}
-resizeCanvas();addEventListener("resize",resizeCanvas);
+function resizeCanvas(){
+    canvas.width=innerWidth;
+    canvas.height=innerHeight;
+}
+resizeCanvas();
+addEventListener("resize",function(){
+    resizeCanvas();
+    // stars is defined by now so this is safe
+    stars.forEach(s=>{ s.x=Math.random()*canvas.width; s.y=Math.random()*canvas.height; });
+});
 const stars=Array.from({length:180},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.5+0.3,dx:(Math.random()-.5)*.3,dy:(Math.random()-.5)*.3,o:Math.random()*.5+.2}));
 (function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${s.o})`;ctx.fill();s.x+=s.dx;s.y+=s.dy;if(s.x<0)s.x=canvas.width;if(s.x>canvas.width)s.x=0;if(s.y<0)s.y=canvas.height;if(s.y>canvas.height)s.y=0;});requestAnimationFrame(tick);})();
 
@@ -1081,7 +1089,7 @@ updateClock();setInterval(updateClock,1000);
 
 let idleTimer=null;
 let lastActivity=Date.now();
-const IDLE_LIMIT=3*60*1000;
+const IDLE_LIMIT=3*60*1000; // 3 minutes
 function resetIdle(){lastActivity=Date.now();}
 function checkIdle(){
     if(!settingsData.idlePanic)return;
@@ -1130,156 +1138,157 @@ let settingsData=JSON.parse(localStorage.getItem("settingsData")||'{"scanlines":
 function saveSetting(key,val){settingsData[key]=val;localStorage.setItem("settingsData",JSON.stringify(settingsData));}
 
 const games=[
-[" Bloons TD5","games/btd5.html","strategy","images/btd5.png"],
-[" Apes vs Helium","games/apesvshelium.html","action","images/apesvshelium.png"],
-[" Cookie Clicker V2.058","games/cookie/index.html","idle","images/cookie.png"],
-[" Cookie Clicker V2.052","games/clicker/index.html","idle","images/cookie.png"],
-[" Spacebar Clicker","games/spacebarclicker.html","idle","images/spacebar.png"],
-[" Bitcoin Clicker","games/bc/index.html","idle","images/bitcoin.png"],
-[" Dogeminer","games/dogeminer.html","idle","images/dogeminer.png"],
-[" CSGO Clicker","games/csgo/index.html","idle","images/csgo.png"],
-[" Revolution Idle","games/revolution.html","idle","images/revolution.png"],
-[" Cells To Singularity","games/cells.html","idle","images/cellstosingularity.png"],
-[" Learn To Fly 3","games/learn/index.html","arcade","images/learntofly3.png"],
-[" Learn To Fly Idle","games/ltfidle.html","idle","images/learntoflyidle.png"],
-[" Idle Breakout","games/breakout.html","idle","images/breakout.png"],
-[" Run 3","games/run3.html","platformer","images/run3.png"],
-[" Bloxorz","games/bloxorz.html","strategy","images/bloxorz.png"],
-[" Jetpack Joyride","games/jetpack.html","arcade","images/jetpack.png"],
-[" Spelunky Classic HD","games/spelunky.html","platformer","images/spelunky.png"],
-[" Speed Stars","games/speedstars.html","action","images/speedstars.png"],
-[" Escape Road 3","games/escaperoad3.html","action","images/escaperoad.png"],
-[" Who's Your Daddy","games/daddy.html","multiplayer","images/daddy.png"],
-[" Little Alchemy 2","games/littlealchemy2.html","strategy","images/littlealchemy.png"],
-[" Slope","games/slope.html","arcade","images/slope.png"],
-[" QWOP","games/qwop.html","arcade","images/qwop.png"],
-[" Agar.io","games/agariolite.html","arcade","images/agario.png"],
-[" Plague Inc. Evolved","games/plague.html","strategy","images/plague.png"],
-[" Survivor.io","games/survivor.html","arcade","images/survivor.png"],
-[" A Game About Feeding a Blackhole","games/agameaboutfeedingablackhole.html","arcade","images/agameaboutfeedingablackhole.png"],
-[" Burrito Bison","games/burritobison.html","arcade","images/burrito.png"],
-[" Awesome Tanks 2","games/tanks.html","action","images/awesometanks2.png"],
-[" My Friend Pedro","games/pedro.html","action","images/pedro.png"],
-[" Blood Money","games/bloodmoney.html","action","images/bloodmoney.png"],
-[" Gunblood","games/gunblood.html","action","images/gunblood.png"],
-[" Age of War 2","games/war2.html","action","images/war2.png"],
-[" Crazy Cattle 3D","games/crazychicken3d.html","arcade","images/crazychicken3d.png"],
-[" Flying Gorilla 3D","games/gorilla.html","arcade","images/gorilla.png"],
-[" Tomb of The Mask","games/tombofthemask.html","arcade","images/tomb.png"],
-[" Outhold","games/outhold.html","strategy","images/outhold.png"],
-[" FISH","games/fish.html","action","images/fish.png"],
-[" Fih","games/fih.html","platformer","images/fih.png"],
-[" Your Only Move is HUSTLE","games/hustle.html","action","images/hustle.png"],
-[" Cluster Truck","games/clustertruck.html","platformer","images/clustertruck.png"],
-[" Gunspin","games/gunspin.html","idle","images/gunspin.png"],
-[" Side Effects","games/sideeffects.html","strategy","images/sideeffects.png"],
-[" Clover Pit","games/cloverpit.html","arcade","images/cloverpit.png"],
-[" Toss The Turtle","games/turtle.html","arcade","images/tosstheturtle.png"],
-[" Untitled Goose Game","games/goose.html","action","images/untitledgoose.png"],
-[" Shift at Midnight","games/shift.html","horror","images/shiftatmidnight.png"],
-[" Bad Parenting","games/bad_parenting.html","horror","images/badparenting.png"],
-[" Slender: The Eight Pages","games/slender.html","horror","images/slender.png"],
-[" Slendytubbies","games/slendytubbies.html","horror","images/slendytubbies.png"],
-[" Balatro","games/balatro.html","strategy","images/balatro.png"],
-[" Tattletail","games/tattletail.html","horror","images/tattletail.png"],
-[" Deadseat","games/Deadseat.html","horror","images/deadseat.png"],
-[" They Are Coming","games/theyarecoming.html","action","images/theyarecoming.png"],
-[" Arthur's Nightmare","games/arthur.html","horror","images/arthur.png"],
-[" The Man From The Window","games/window.html","horror","images/window.png"],
-[" Resident Evil","games/residentevil.html","horror","images/residentevil.png"],
-[" Resident Evil 2","games/residentevil2.html","horror","images/residentevil2.png"],
-[" Silent Hill","games/silent.html","horror","images/silenthill.png"],
-[" Fallout","games/fallout.html","action","images/fallout.png"],
-[" Raft","games/raft.html","action","images/raft.png"],
-[" Kindergarten","games/kindergarten.html","strategy","images/kindergarten.png"],
-[" Kindergarten 2","games/kinder2.html","strategy","images/kindergarten2.png"],
-[" Kindergarten 3","games/kinder3.html","strategy","images/kindergarten3.png"],
-[" Plants Vs. Zombies","games/pvz.html","strategy","images/pvz.png"],
-[" Plants Vs. Zombies 2","games/pvz2.html","strategy","images/pvz2.png"],
-[" Gun Mayhem 2","games/gunmayhem2.html","multiplayer","images/gunmayhem2.png"],
-[" Tag","games/tag.html","multiplayer","images/tag.png"],
-[" Puppet Fighter 2 Player","games/puppet.html","multiplayer","images/puppet.png"],
-[" Level Devil","games/leveldevil.html","multiplayer","images/leveldevil.png"],
-[" Drive Mad","games/drivemad.html","action","images/drivemad.png"],
-[" Cuphead","games/Cuphead.html","platformer","images/cuphead.png"],
-[" Pizza Tower","games/pizzatower.html","platformer","images/pizzatower.png"],
-[" Youtube Life OMG","games/youtube.html","arcade","images/youtube.png"],
-[" Karlson","games/karlson.html","platformer","images/karlson.png"],
-[" Angry Birds","games/angrybirds.html","strategy","images/angrybirds.png"],
-[" Bad Piggies","games/badpiggies.html","strategy","images/badpiggies.png"],
-[" Tiny Fishing","games/tinyfishing.html","idle","images/fishing.png"],
-[" Gladihoppers","games/gladihoppers.html","action","images/gladihoppers.png"],
-[" Basket Random","games/basket.html","sports","images/basketrandom.png"],
-[" Granny","games/granny.html","horror","images/granny.png"],
-[" Ice Dodo","games/ice.html","arcade","images/icedodo.png"],
-[" Iron Lung","games/ironlung.html","horror","images/ironlung.png"],
-[" Overburden","games/overburden.html","horror","images/overburden.png"],
-[" Brotato","games/brotato.html","arcade","images/brotato.png"],
-[" 10 Minutes Till Dawn","games/tilldawn.html","arcade","images/tilldawn.png"],
-[" Getting Over It","games/getting.html","platformer","images/gettingoverit.png"],
-[" Short Life","games/shortlife.html","platformer","images/shortlife.png"],
-[" Abandoned","games/abandoned.html","arcade","images/abandoned.png"],
-[" Dice a Million","games/diceamillion.html","arcade","images/diceamillion.png"],
-[" Minecraft 1.12.2","games/minecraft.html","action","images/minecraft.png"],
-[" Minecraft 1.8.8","games/minecraft2.html","action","images/minecraft2.png"],
-[" World's Hardest Game","games/whg.html","platformer","images/whg.png"],
-[" World's Hardest Game 3","games/whg3.html","platformer","images/whg3.png"],
-[" World's Hardest Game 4","games/whg4.html","platformer","images/whg4.png"],
-[" Fears To Fathom","games/fears.html","horror","images/fearstofathom.png"],
-[" The Binding of Isaac Wrath Of The Lamb","games/tboir.html","action","images/tboir.png"],
-[" Alien Hominid","games/alien.html","action","images/hominid.png"],
-[" Bendy and The Ink Machine","games/bendy.html","horror","images/bendy.png"],
-[" OMORI","games/omori.html","action","images/omori.png"],
-[" Undertale","games/undertale/index.html","action","images/undertale.png"],
-[" Deltarune","games/deltarune.html","action","images/deltarune.png"],
-[" Terraria","games/terraria.html","action","images/terraria.png"],
-[" Stardew Valley","games/stardew.html","arcade","images/stardew.png"],
-[" Final Earth 2","games/finalearth2.html","arcade","images/finalearth2.png"],
-[" School Boy Runaway","games/school.html","strategy","images/runaway.png"],
-[" Getaway Shootout","games/getaway.html","multiplayer","images/getaway.png"],
-[" There is No Game","games/nogame.html","arcade","images/nogame.png"],
-[" Shootout Reloaded","games/shootout.html","multiplayer","images/shootout.png"],
-[" Slender Multiplayer","games/slendermultiplayer.html","multiplayer","images/slendermultiplayer.png"],
-[" Tube Jumpers","games/tubejumpers.html","multiplayer","images/tubejumpers.png"],
-[" House of Hazards","games/house.html","multiplayer","images/houseofhazards.png"],
-[" Ragdoll Hit","games/hit.html","multiplayer","images/hit.png"],
-[" Ragdoll Archers","games/archers.html","multiplayer","images/archers.png"],
-[" Dumb Ways To Die","games/dumb.html","arcade","images/dumbwaystodie.png"],
-[" Curve Ball 3D","games/Curve3.html","arcade","images/curveball3d.png"],
-[" Polytrack","games/polytrack.html","sports","images/polytrack.png"],
-[" Ultrapool","games/ultrapool.html","sports","images/ultrapool.png"],
-[" Retro Bowl","games/retrobowl.html","sports","images/bowl.png"],
-[" Football Bros.","games/football.html","sports","images/football.png"],
-[" Basketball Bros.","games/basketbros.html","sports","images/basketbros.png"],
-[" Baseball Bros.","games/baseballbros.html","sports","images/baseballbros.png"],
-[" A Small World Cup","games/worldcup.html","sports","images/asmallworldcup.png"],
-[" Space Waves","games/spacewaves.html","arcade","images/spacewaves.png"],
-[" Hollow Knight","games/hollow_knight.html","platformer","images/hollow.png"],
-[" Hollow Knight: Silksong","games/hollowknightsilksong.html","platformer","images/hollowknightsilksong.png"],
-[" Half Life","games/half_life.html","action","images/halflife.png"],
-[" Portal Flash","games/portal.html","action","images/portal.png"],
-[" Block Blast","games/block.html","arcade","images/blast.png"],
-[" A Difficult Game About Climbing","games/climbing.html","platformer","images/climbing.png"],
-[" Webfishing","games/webfish.html","arcade","images/webfishing.png"],
-[" Papa's Pizzeria","games/pizza.html","strategy","images/pizzeria.png"],
-[" Slime Rancher","games/slime.html","arcade","images/slimerancher.png"],
-[" A Dance of Fire And Ice","games/adofai.html","arcade","images/adofai.png"],
-[" FNAF","games/fnaf.html","horror","images/fnaf.png"],
-[" FNAF 2","games/fnaf2.html","horror","images/fnaf2.png"],
-[" FNAF 3","games/fnaf3.html","horror","images/fnaf3.png"],
-[" FNAF 4","games/fnaf4.html","horror","images/fnaf4.png"],
-[" FNAF SL","games/fnafsl.html","horror","images/fnafsl.png"],
-[" FNAF PS","games/fnafps.html","horror","images/fnafps.png"],
-[" FNAF UCN","games/fnafucn.html","horror","images/fnafucn.png"],
-[" FNAF World","games/fnafw.html","action","images/fnafw.png"],
-[" Geometry Dash","games/geometry.html","platformer","images/geometry.png"],
-[" FNF (akoni game)","games/akoni.html","arcade","images/akoni.png"],
-[" Baldi's Basics Plus","games/baldi.html","horror","images/baldi.png"],
-[" Unfair Mario (rage game)","games/unfairmario.html","platformer","images/unfairmario.png"],
+["Bloons TD5","games/btd5.html","strategy","images/btd5.png"],
+["Apes vs Helium","games/apesvshelium.html","action","images/apesvshelium.png"],
+["Cookie Clicker V2.058","games/cookie/index.html","idle","images/cookie.png"],
+["Cookie Clicker V2.052","games/clicker/index.html","idle","images/cookie.png"],
+["Spacebar Clicker","games/spacebarclicker.html","idle","images/spacebar.png"],
+["Bitcoin Clicker","games/bc/index.html","idle","images/bitcoin.png"],
+["Dogeminer","games/dogeminer.html","idle","images/dogeminer.png"],
+["CSGO Clicker","games/csgo/index.html","idle","images/csgo.png"],
+["Revolution Idle","games/revolution.html","idle","images/revolution.png"],
+["Cells To Singularity","games/cells.html","idle","images/cellstosingularity.png"],
+["Learn To Fly 3","games/learn/index.html","arcade","images/learntofly3.png"],
+["Learn To Fly Idle","games/ltfidle.html","idle","images/learntoflyidle.png"],
+["Idle Breakout","games/breakout.html","idle","images/breakout.png"],
+["Run 3","games/run3.html","platformer","images/run3.png"],
+["Bloxorz","games/bloxorz.html","strategy","images/bloxorz.png"],
+["Jetpack Joyride","games/jetpack.html","arcade","images/jetpack.png"],
+["Spelunky Classic HD","games/spelunky.html","platformer","images/spelunky.png"],
+["Speed Stars","games/speedstars.html","action","images/speedstars.png"],
+["Escape Road 3","games/escaperoad3.html","action","images/escaperoad.png"],
+["Who's Your Daddy","games/daddy.html","multiplayer","images/daddy.png"],
+["Little Alchemy 2","games/littlealchemy2.html","strategy","images/littlealchemy.png"],
+["Slope","games/slope.html","arcade","images/slope.png"],
+["QWOP","games/qwop.html","arcade","images/qwop.png"],
+["Agar.io","games/agariolite.html","arcade","images/agario.png"],
+["Plague Inc. Evolved","games/plague.html","strategy","images/plague.png"],
+["Survivor.io","games/survivor.html","arcade","images/survivor.png"],
+["A Game About Feeding a Blackhole","games/agameaboutfeedingablackhole.html","arcade","images/agameaboutfeedingablackhole.png"],
+["Burrito Bison","games/burritobison.html","arcade","images/burrito.png"],
+["Awesome Tanks 2","games/tanks.html","action","images/awesometanks2.png"],
+["My Friend Pedro","games/pedro.html","action","images/pedro.png"],
+["Blood Money","games/bloodmoney.html","action","images/bloodmoney.png"],
+["Gunblood","games/gunblood.html","action","images/gunblood.png"],
+["Age of War 2","games/war2.html","action","images/war2.png"],
+["Crazy Cattle 3D","games/crazychicken3d.html","arcade","images/crazychicken3d.png"],
+["Flying Gorilla 3D","games/gorilla.html","arcade","images/gorilla.png"],
+["Tomb of The Mask","games/tombofthemask.html","arcade","images/tomb.png"],
+["Outhold","games/outhold.html","strategy","images/outhold.png"],
+["FISH","games/fish.html","action","images/fish.png"],
+["Fih","games/fih.html","platformer","images/fih.png"],
+["Your Only Move is HUSTLE","games/hustle.html","action","images/hustle.png"],
+["Cluster Truck","games/clustertruck.html","platformer","images/clustertruck.png"],
+["Gunspin","games/gunspin.html","idle","images/gunspin.png"],
+["Side Effects","games/sideeffects.html","strategy","images/sideeffects.png"],
+["Clover Pit","games/cloverpit.html","arcade","images/cloverpit.png"],
+["Toss The Turtle","games/turtle.html","arcade","images/tosstheturtle.png"],
+["Untitled Goose Game","games/goose.html","action","images/untitledgoose.png"],
+["Shift at Midnight","games/shift.html","horror","images/shiftatmidnight.png"],
+["Bad Parenting","games/bad_parenting.html","horror","images/badparenting.png"],
+["Slender: The Eight Pages","games/slender.html","horror","images/slender.png"],
+["Slendytubbies","games/slendytubbies.html","horror","images/slendytubbies.png"],
+["Balatro","games/balatro.html","strategy","images/balatro.png"],
+["Tattletail","games/tattletail.html","horror","images/tattletail.png"],
+["Deadseat","games/Deadseat.html","horror","images/deadseat.png"],
+["They Are Coming","games/theyarecoming.html","action","images/theyarecoming.png"],
+["Arthur's Nightmare","games/arthur.html","horror","images/arthur.png"],
+["The Man From The Window","games/window.html","horror","images/window.png"],
+["Resident Evil","games/residentevil.html","horror","images/residentevil.png"],
+["Resident Evil 2","games/residentevil2.html","horror","images/residentevil2.png"],
+["Silent Hill","games/silent.html","horror","images/silenthill.png"],
+["Fallout","games/fallout.html","action","images/fallout.png"],
+["Raft","games/raft.html","action","images/raft.png"],
+["Kindergarten","games/kindergarten.html","strategy","images/kindergarten.png"],
+["Kindergarten 2","games/kinder2.html","strategy","images/kindergarten2.png"],
+["Kindergarten 3","games/kinder3.html","strategy","images/kindergarten3.png"],
+["Plants Vs. Zombies","games/pvz.html","strategy","images/pvz.png"],
+["Plants Vs. Zombies 2","games/pvz2.html","strategy","images/pvz2.png"],
+["Gun Mayhem 2","games/gunmayhem2.html","multiplayer","images/gunmayhem2.png"],
+["Tag","games/tag.html","multiplayer","images/tag.png"],
+["Puppet Fighter 2 Player","games/puppet.html","multiplayer","images/puppet.png"],
+["Level Devil","games/leveldevil.html","multiplayer","images/leveldevil.png"],
+["Drive Mad","games/drivemad.html","action","images/drivemad.png"],
+["Cuphead","games/Cuphead.html","platformer","images/cuphead.png"],
+["Pizza Tower","games/pizzatower.html","platformer","images/pizzatower.png"],
+["Youtube Life OMG","games/youtube.html","arcade","images/youtube.png"],
+["Karlson","games/karlson.html","platformer","images/karlson.png"],
+["Angry Birds","games/angrybirds.html","strategy","images/angrybirds.png"],
+["Bad Piggies","games/badpiggies.html","strategy","images/badpiggies.png"],
+["Tiny Fishing","games/tinyfishing.html","idle","images/fishing.png"],
+["Gladihoppers","games/gladihoppers.html","action","images/gladihoppers.png"],
+["Basket Random","games/basket.html","sports","images/basketrandom.png"],
+["Granny","games/granny.html","horror","images/granny.png"],
+["Ice Dodo","games/ice.html","arcade","images/icedodo.png"],
+["Iron Lung","games/ironlung.html","horror","images/ironlung.png"],
+["Overburden","games/overburden.html","horror","images/overburden.png"],
+["Brotato","games/brotato.html","arcade","images/brotato.png"],
+["10 Minutes Till Dawn","games/tilldawn.html","arcade","images/tilldawn.png"],
+["Getting Over It","games/getting.html","platformer","images/gettingoverit.png"],
+["Short Life","games/shortlife.html","platformer","images/shortlife.png"],
+["Abandoned","games/abandoned.html","arcade","images/abandoned.png"],
+["Dice a Million","games/diceamillion.html","arcade","images/diceamillion.png"],
+["Minecraft 1.12.2","games/minecraft.html","action","images/minecraft.png"],
+["Minecraft 1.8.8","games/minecraft2.html","action","images/minecraft2.png"],
+["World's Hardest Game","games/whg.html","platformer","images/whg.png"],
+["World's Hardest Game 3","games/whg3.html","platformer","images/whg3.png"],
+["World's Hardest Game 4","games/whg4.html","platformer","images/whg4.png"],
+["Fears To Fathom","games/fears.html","horror","images/fearstofathom.png"],
+["The Binding of Isaac Wrath Of The Lamb","games/tboir.html","action","images/tboir.png"],
+["Alien Hominid","games/alien.html","action","images/hominid.png"],
+["Bendy and The Ink Machine","games/bendy.html","horror","images/bendy.png"],
+["OMORI","games/omori.html","action","images/omori.png"],
+["Undertale","games/undertale/index.html","action","images/undertale.png"],
+["Deltarune","games/deltarune.html","action","images/deltarune.png"],
+["Terraria","games/terraria.html","action","images/terraria.png"],
+["Stardew Valley","games/stardew.html","arcade","images/stardew.png"],
+["Final Earth 2","games/finalearth2.html","arcade","images/finalearth2.png"],
+["School Boy Runaway","games/school.html","strategy","images/runaway.png"],
+["Getaway Shootout","games/getaway.html","multiplayer","images/getaway.png"],
+["There is No Game","games/nogame.html","arcade","images/nogame.png"],
+["Shootout Reloaded","games/shootout.html","multiplayer","images/shootout.png"],
+["Slender Multiplayer","games/slendermultiplayer.html","multiplayer","images/slendermultiplayer.png"],
+["Tube Jumpers","games/tubejumpers.html","multiplayer","images/tubejumpers.png"],
+["House of Hazards","games/house.html","multiplayer","images/houseofhazards.png"],
+["Ragdoll Hit","games/hit.html","multiplayer","images/hit.png"],
+["Ragdoll Archers","games/archers.html","multiplayer","images/archers.png"],
+["Dumb Ways To Die","games/dumb.html","arcade","images/dumbwaystodie.png"],
+["Curve Ball 3D","games/Curve3.html","arcade","images/curveball3d.png"],
+["Polytrack","games/polytrack.html","sports","images/polytrack.png"],
+["Ultrapool","games/ultrapool.html","sports","images/ultrapool.png"],
+["Retro Bowl","games/retrobowl.html","sports","images/bowl.png"],
+["Football Bros.","games/football.html","sports","images/football.png"],
+["Basketball Bros.","games/basketbros.html","sports","images/basketbros.png"],
+["Baseball Bros.","games/baseballbros.html","sports","images/baseballbros.png"],
+["A Small World Cup","games/worldcup.html","sports","images/asmallworldcup.png"],
+["Space Waves","games/spacewaves.html","arcade","images/spacewaves.png"],
+["Hollow Knight","games/hollow_knight.html","platformer","images/hollow.png"],
+["Hollow Knight: Silksong","games/hollowknightsilksong.html","platformer","images/hollowknightsilksong.png"],
+["Half Life","games/half_life.html","action","images/halflife.png"],
+["Portal Flash","games/portal.html","action","images/portal.png"],
+["Block Blast","games/block.html","arcade","images/blast.png"],
+["A Difficult Game About Climbing","games/climbing.html","platformer","images/climbing.png"],
+["Webfishing","games/webfish.html","arcade","images/webfishing.png"],
+["Papa's Pizzeria","games/pizza.html","strategy","images/pizzeria.png"],
+["Slime Rancher","games/slime.html","arcade","images/slimerancher.png"],
+["A Dance of Fire And Ice","games/adofai.html","arcade","images/adofai.png"],
+["FNAF","games/fnaf.html","horror","images/fnaf.png"],
+["FNAF 2","games/fnaf2.html","horror","images/fnaf2.png"],
+["FNAF 3","games/fnaf3.html","horror","images/fnaf3.png"],
+["FNAF 4","games/fnaf4.html","horror","images/fnaf4.png"],
+["FNAF SL","games/fnafsl.html","horror","images/fnafsl.png"],
+["FNAF PS","games/fnafps.html","horror","images/fnafps.png"],
+["FNAF UCN","games/fnafucn.html","horror","images/fnafucn.png"],
+["FNAF World","games/fnafw.html","action","images/fnafw.png"],
+["Geometry Dash","games/geometry.html","platformer","images/geometry.png"],
+["FNF (akoni game)","games/akoni.html","arcade","images/akoni.png"],
+["Baldi's Basics Plus","games/baldi.html","horror","images/baldi.png"],
+["Unfair Mario (rage game)","games/unfairmario.html","platformer","images/unfairmario.png"],
 ];
 
 let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 
+// re-renders the main game grid based on current category + sort
 function buildGameGrid() {
     const grid = document.getElementById("mainGrid");
     grid.innerHTML = "";
@@ -1305,71 +1314,79 @@ function createTile(game) {
 }
 
 const hiddenGames=[
-[" Pico's School","games/pico.html","action","images/pico.png"],
-[" Postal","games/postal.html","action","images/postal.png"],
-[" Hotline Miami","games/hotline_miami.html","action","images/hotlinemiami.png"],
-[" DOOM","games/DOOM.html","action","images/doom.png"],
-[" DOOM 2","games/doom2.html","action","images/doom2.png"],
-[" Quake 3 Arena","games/quak3.html","action","images/quak3arena.png"],
-[" Quake 64","games/quak64.html","action","images/quak64.png"],
-[" GTA Vice City","games/vice.html","action","images/vice.png"],
-[" Buckshot Roulette","games/buckshot.html","strategy","images/buckshot.png"],
-[" Ultrakill","games/ultrakill.html","action","images/ultrakill.png"],
-[" Happy Wheels","games/happy.html","platformer","images/happy.png"],
-[" Five Night's at Epstein's","games/epstein.html","horror","images/fnae.png"],
-[" Bear Clicker","games/bearclicker.html","idle","images/bearclicker.png"],
-[" Christmas Massacre","games/christmas.html","horror","images/christmas.png"],
-[" People Playground","games/playground.html","action","images/playground.png"],
-[" Stake Mines","games/stake/index.html","arcade","images/mines.png"],
-[" Plinko","games/plinko.html","arcade","images/plinko.png"],
-[" Scratch Inc","games/scratch.html","arcade","images/scratchinc.png"],
-[" Orange Roulette","games/orange.html","strategy","images/orange.png"],
-[" Blackjack","games/blackjack.html","strategy","images/blackjack.png"],
+["Pico's School","games/pico.html","action","images/pico.png"],
+["Postal","games/postal.html","action","images/postal.png"],
+["Hotline Miami","games/hotline_miami.html","action","images/hotlinemiami.png"],
+["DOOM","games/DOOM.html","action","images/doom.png"],
+["DOOM 2","games/doom2.html","action","images/doom2.png"],
+["Quake 3 Arena","games/quak3.html","action","images/quak3arena.png"],
+["Quake 64","games/quak64.html","action","images/quak64.png"],
+["GTA Vice City","games/vice.html","action","images/vice.png"],
+["Buckshot Roulette","games/buckshot.html","strategy","images/buckshot.png"],
+["Ultrakill","games/ultrakill.html","action","images/ultrakill.png"],
+["Happy Wheels","games/happy.html","platformer","images/happy.png"],
+["Five Night's at Epstein's","games/epstein.html","horror","images/fnae.png"],
+["Bear Clicker","games/bearclicker.html","idle","images/bearclicker.png"],
+["Christmas Massacre","games/christmas.html","horror","images/christmas.png"],
+["People Playground","games/playground.html","action","images/playground.png"],
+["Stake Mines","games/stake/index.html","arcade","images/mines.png"],
+["Plinko","games/plinko.html","arcade","images/plinko.png"],
+["Scratch Inc","games/scratch.html","arcade","images/scratchinc.png"],
+["Orange Roulette","games/orange.html","strategy","images/orange.png"],
+["Blackjack","games/blackjack.html","strategy","images/blackjack.png"],
 ];
 
 const emulated=[
-[" Phantom Hourglass","roms/phantom.html","images/phantom.png"],
-[" Spirit Tracks","roms/spirit.html","images/spirit.png"],
-[" A Link to the Past","roms/past.html","images/past.png"],
-[" Link's Awakening","roms/awaken.html","images/awaken.png"],
-[" Minish Cap","roms/minish.html","images/minish.png"],
-[" Ocarina of Time","roms/oot.html","images/oot.png"],
-[" Majora's Mask","roms/mm.html","images/mm.png"],
-[" Kirby's Super Star Ultra","roms/ultra.html","images/ultra.png"],
-[" Kirby's Squeak Squad","roms/squeak.html","images/squeak.png"],
-[" Kirby's Dream Land","roms/kdl.html","images/dream.png"],
-[" Kirby's Dream Land 2","roms/kdl2.html","images/dream2.png"],
-[" Banjo Kazooie","roms/banjo.html","images/banjo.png"],
-[" Earthbound","roms/earthbound.html","images/earthbound.png"],
-[" Mother 3","roms/mother3.html","images/mother3.png"],
-[" Worms Open Warfare 2","roms/worms.html","images/worms.png"],
-[" Pokemon Heart Gold","roms/pkh.html","images/heartgold.png"],
-[" Pokemon Black 2","roms/pb2.html","images/black2.png"],
-[" Pokemon Sapphire","roms/sapphire.html","images/sapphire.png"],
-[" Super Punch Out","roms/superpunch.html","images/punchout.png"],
-[" Mario & Luigi: Partners in Time","roms/partners.html","images/partners.png"],
-[" Super Mario World","roms/world.html","images/world.png"],
-[" Mario 3","roms/mario3.html","images/mario3.png"],
-[" Paper Mario","roms/papermario.html","images/papermario.png"],
-[" Paper Mario The Thousand Year Door","roms/ttyd.html","images/ttyd.png"],
-[" Super Mario 64","roms/supermario64.html","images/mario64.png"],
+["Phantom Hourglass","roms/phantom.html","images/phantom.png"],
+["Spirit Tracks","roms/spirit.html","images/spirit.png"],
+["A Link to the Past","roms/past.html","images/past.png"],
+["Link's Awakening","roms/awaken.html","images/awaken.png"],
+["Minish Cap","roms/minish.html","images/minish.png"],
+["Ocarina of Time","roms/oot.html","images/oot.png"],
+["Majora's Mask","roms/mm.html","images/mm.png"],
+["Kirby's Super Star Ultra","roms/ultra.html","images/ultra.png"],
+["Kirby's Squeak Squad","roms/squeak.html","images/squeak.png"],
+["Kirby's Dream Land","roms/kdl.html","images/dream.png"],
+["Kirby's Dream Land 2","roms/kdl2.html","images/dream2.png"],
+["Banjo Kazooie","roms/banjo.html","images/banjo.png"],
+["Earthbound","roms/earthbound.html","images/earthbound.png"],
+["Mother 3","roms/mother3.html","images/mother3.png"],
+["Worms Open Warfare 2","roms/worms.html","images/worms.png"],
+["Pokemon Heart Gold","roms/pkh.html","images/heartgold.png"],
+["Pokemon Black 2","roms/pb2.html","images/black2.png"],
+["Pokemon Sapphire","roms/sapphire.html","images/sapphire.png"],
+["Super Punch Out","roms/superpunch.html","images/punchout.png"],
+["Mario & Luigi: Partners in Time","roms/partners.html","images/partners.png"],
+["Super Mario World","roms/world.html","images/world.png"],
+["Mario 3","roms/mario3.html","images/mario3.png"],
+["Paper Mario","roms/papermario.html","images/papermario.png"],
+["Paper Mario The Thousand Year Door","roms/ttyd.html","images/ttyd.png"],
+["Super Mario 64","roms/supermario64.html","images/mario64.png"],
 ];
 const flashGames=[["⚡ Flash","ruffle/Ruffle.html","images/flash.png"]];
 
-function fmtTime(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);if(h>0)return h+"h "+(m%60)+"m";if(m>0)return m+"m "+(s%60)+"s";return s+"s";}
+// ms -> "2h 14m" / "14m 30s" / "45s"
+function fmtTime(ms){
+    const s=Math.floor(ms/1000), m=Math.floor(s/60), h=Math.floor(m/60);
+    if(h>0) return h+"h "+(m%60)+"m";
+    if(m>0) return m+"m "+(s%60)+"s";
+    return s+"s";
+}
 function emptyEl(icon,txt){
     const d=document.createElement("div");
     d.style.cssText="text-align:center;padding:50px 20px;margin:8px 0;animation:tileIn 0.3s ease both;";
     d.innerHTML=`<div style="font-size:44px;margin-bottom:14px;opacity:0.6;filter:grayscale(0.3);">${icon}</div><div style="font-size:13px;color:rgba(203,213,245,0.5);font-weight:500;">${txt}</div>`;
     return d;
 }
+// add a game to the top of recently played (and dedupe + trim it)
 function addRecent(g){
-    recentlyPlayed=recentlyPlayed.filter(x=>x[1]!==g[1]);
+    recentlyPlayed = recentlyPlayed.filter(x=>x[1]!==g[1]);
     recentlyPlayed.unshift(g);
-    recentlyPlayed=recentlyPlayed.slice(0,settingsData.recentMax||10);
-    localStorage.setItem("recentlyPlayed",JSON.stringify(recentlyPlayed));
+    recentlyPlayed = recentlyPlayed.slice(0, settingsData.recentMax||10);
+    localStorage.setItem("recentlyPlayed", JSON.stringify(recentlyPlayed));
 }
 
+// show a little notification in the corner
 function toast(icon,msg,duration=2500){
     const t=document.createElement("div");t.className="toast";
     t.innerHTML=`<span class="toast-icon">${icon}</span><span>${msg}</span><div class="toast-bar"></div>`;
@@ -1384,16 +1401,26 @@ function toast(icon,msg,duration=2500){
     setTimeout(()=>{t.classList.remove("show");setTimeout(()=>t.remove(),300);},duration);
 }
 
+
+// escape user/data content before sticking it in innerHTML
+function esc(s){ const d=document.createElement("div"); d.textContent=String(s); return d.innerHTML; }
+
 function openGame(href,label,key){
     document.getElementById("overlayFrame").src=href;
     document.getElementById("overlayTitle").textContent=label.trim();
     document.getElementById("gameOverlay").classList.add("active");
     document.getElementById("overlayTimer").textContent="0:00";
-    overlayStart=Date.now();activeKey=key;
-    localStorage.setItem("lastGame",JSON.stringify({href,label,key}));
-    localStorage.setItem("lastGameOpen","true");
+    overlayStart = Date.now();
+    activeKey = key;
+    localStorage.setItem("lastGame", JSON.stringify({href, label, key}));
+    localStorage.setItem("lastGameOpen", "true");
     updateNowPlaying(label);
-    overlayTimer=setInterval(()=>{const e=Math.floor((Date.now()-overlayStart)/1000),m=Math.floor(e/60),s=e%60;document.getElementById("overlayTimer").textContent=m+":"+(s<10?"0"+s:s);},1000);
+    // update the timer in the overlay bar every second
+    overlayTimer = setInterval(()=>{
+        const elapsed = Math.floor((Date.now()-overlayStart)/1000);
+        const m = Math.floor(elapsed/60), s = elapsed%60;
+        document.getElementById("overlayTimer").textContent = m+":"+(s<10?"0"+s:s);
+    }, 1000);
 }
 function closeOverlay(){
     if(pipMode){pipMode=false;document.getElementById("gameOverlay").classList.remove("pip-mode");document.getElementById("pipBtn").textContent="⧉ Float";}
@@ -1419,6 +1446,7 @@ document.addEventListener("fullscreenchange",()=>{const bar=document.getElementB
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("gameOverlay").classList.contains("active"))closeOverlay();});
 
 const catDotColors={horror:"#f87171",action:"#fb923c",platformer:"#fbbf24",strategy:"#60a5fa",idle:"#c084fc",arcade:"#f472b6",sports:"#4ade80",multiplayer:"#2dd4bf"};
+// builds a game tile element - used by basically every section
 function makeTile(href, img, label, key, refreshFn, opts) {
     opts = opts || {};
     const isFav = favorites.includes(key);
@@ -1427,7 +1455,7 @@ function makeTile(href, img, label, key, refreshFn, opts) {
     const tile = document.createElement("div");
     tile.className = "game-tile";
     const ptBar = pt > 0 ? `<div class="tile-pt-bar" style="width:${Math.min(100,Math.round(pt/3600000*100)+5)}%;max-width:100%;"></div>` : '';
-    // Find category for dot
+    // find which category this game is in for the color dot
     const gameEntry = [...games,...hiddenGames,...emulated].find(g=>g[1]===href);
     const cat = gameEntry?.[2]||"";
     const dotColor = catDotColors[cat]||"";
@@ -1443,7 +1471,7 @@ function makeTile(href, img, label, key, refreshFn, opts) {
         ${ptBar}
     `;
     tile.onclick = (e) => {
-        // Ripple effect
+        // click ripple
         const ripple = document.createElement("div");
         ripple.className = "ripple";
         const rect = tile.getBoundingClientRect();
@@ -1568,8 +1596,8 @@ function renderGOTD(){
     const info=document.createElement("div");info.className="gotd-info";
     info.innerHTML=`
     <div class="gotd-label">🌟 GAME OF THE DAY</div>
-    <div class="gotd-title">${g[0].trim()}</div>
-    <div class="gotd-cat" style="background:rgba(203,213,245,0.08);display:inline-block;padding:3px 10px;border-radius:20px;margin-bottom:14px;">${g[2].toUpperCase()}</div><br>`;
+    <div class="gotd-title">${esc(g[0].trim())}</div>
+    <div class="gotd-cat" style="background:rgba(203,213,245,0.08);display:inline-block;padding:3px 10px;border-radius:20px;margin-bottom:14px;">${esc(g[2].toUpperCase())}</div><br>`;
     const btn=document.createElement("button");btn.className="gotd-play";btn.textContent="▶ Play Now";btn.onclick=()=>{addRecent([g[0],g[1],"",g[3]||""]);openGame(g[1],g[0],key);};
     info.appendChild(btn);card.appendChild(info);box.appendChild(card);
     const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
@@ -1582,7 +1610,7 @@ function renderGOTD(){
     const tmrInfo=document.createElement("div");tmrInfo.className="gotd-info";
     tmrInfo.innerHTML=`
     <div class="gotd-label">🌙 TOMORROW</div>
-    <div class="gotd-title" style="filter:blur(6px);user-select:none;">${g2[0].trim()}</div>
+    <div class="gotd-title" style="filter:blur(6px);user-select:none;">${esc(g2[0].trim())}</div>
     <div class="gotd-cat" style="background:rgba(203,213,245,0.08);display:inline-block;padding:3px 10px;border-radius:20px;">${g2[2].toUpperCase()}</div>
     <div style="font-size:11px;color:#CBD5F5;margin-top:10px;letter-spacing:1px;">Unlocks at midnight</div>`;
     tmrCard.appendChild(tmrInfo);box.appendChild(tmrCard);
@@ -1734,7 +1762,7 @@ function renderGlobalSearch(q){
     if(!totalResults) box.appendChild(emptyEl("🔍",`No results for "${q}"`));
 }
 
-// ===== PROXY LIST — edit these URLs =====
+// proxy list - add URLs here
 const proxies = [
     "due to I.T. finding the file proxies have been removed",
    ];
@@ -1792,7 +1820,7 @@ function renderNotes(){
         card.style.cssText="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border:1px solid rgba(203,213,245,0.08);border-radius:var(--radius);margin:4px 0;";
         if(img){const im=document.createElement("img");im.src=img;im.style.cssText="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;";card.appendChild(im);}
         const info=document.createElement("div");info.style.cssText="flex:1;min-width:0;";
-        info.innerHTML=`<div style="font-size:13px;font-weight:500;color:#e0e7ff;margin-bottom:4px;">${name}</div><div style="font-size:12px;color:#CBD5F5;line-height:1.5;">${note}</div>`;
+        info.innerHTML=`<div style="font-size:13px;font-weight:500;color:#e0e7ff;margin-bottom:4px;">${esc(name)}</div><div style="font-size:12px;color:#CBD5F5;line-height:1.5;">${esc(note)}</div>`;
         const editBtn=document.createElement("button");editBtn.className="icon-btn";editBtn.textContent="✏️";
         editBtn.onclick=()=>{const n=prompt("Edit note:",note);if(n===null)return;if(n.trim()===""){delete gameNotes[key];}else{gameNotes[key]=n.trim();}localStorage.setItem("gameNotes",JSON.stringify(gameNotes));toast("📝",n.trim()?"Note updated":"Note removed");renderNotes();};
         card.appendChild(info);card.appendChild(editBtn);box.appendChild(card);
@@ -2004,7 +2032,7 @@ document.getElementById("favBtn").addEventListener("click",()=>showSection("favo
 
 	function submitToForm() {
     const name = document.getElementById('suggestName').value.trim();
-    const genre = document.getElementById('suggestGenre').value;
+    const genre = document.getElementById('suggestLink').value;
     const desc = document.getElementById('suggestDesc').value.trim();
     
     if (!name) {
@@ -2019,7 +2047,7 @@ document.getElementById("favBtn").addEventListener("click",()=>showSection("favo
     toast("📨", "Opening form for: " + name);
     
     document.getElementById('suggestName').value = '';
-    document.getElementById('suggestGenre').value = '';
+    document.getElementById('suggestLink').value = '';
     document.getElementById('suggestDesc').value = '';
 }
 
@@ -2046,7 +2074,7 @@ document.getElementById("searchBar").addEventListener("input",function(){
     document.getElementById("globalsearchSection").classList.add("active");
     renderGlobalSearch(q);
     document.querySelector(".panel-title").textContent=`SEARCH · "${q}"`;
-    // Count results
+    // count how many results for the badge
     const all=[...games,...emulated,...flashGames,...hiddenGames];
     const count=all.filter(g=>g[0].toLowerCase().includes(q)).length;
     countEl.style.display=count>0?"block":"none";
@@ -2201,7 +2229,7 @@ function spinSlot(){
                         const r = document.getElementById("reel"+i);
                         r.classList.add("winning");
                     });
-                    document.getElementById("slotResult").innerHTML=`<span style="font-size:20px;">🎯</span> <strong style="color:#e0e7ff;font-size:20px;">${slotChosen[0].trim()}</strong>`;
+                    document.getElementById("slotResult").innerHTML=`<span style="font-size:20px;">🎯</span> <strong style="color:#e0e7ff;font-size:20px;">${esc(slotChosen[0].trim())}</strong>`;
                     document.getElementById("slotBtns").style.display="flex";
                     toast("🎰","Opening "+slotChosen[0].trim());
                 }, 300);
@@ -2270,8 +2298,9 @@ function applyEasterEgg(){
     };
 }
 
+// default password - can be changed in settings and stored in localStorage
 const PASSWORD="2255";
-if(sessionStorage.getItem("unlocked")==="true")document.getElementById("passwordScreen").style.display="none";
+if(sessionStorage.getItem("unlocked")==="true") document.getElementById("passwordScreen").style.display="none";
 document.getElementById("passwordInput").addEventListener("keydown",e=>{
     if(e.key==="Enter"){
         if(document.getElementById("passwordInput").value===(localStorage.getItem("customPassword")||PASSWORD)){
@@ -2282,7 +2311,7 @@ document.getElementById("passwordInput").addEventListener("keydown",e=>{
             document.getElementById("passwordInput").value="";
             const pwBox=document.querySelector(".pw-box");
             pwBox.classList.remove("pw-shake");
-            void pwBox.offsetWidth; // reflow
+            void pwBox.offsetWidth; // force reflow so the animation restarts
             pwBox.classList.add("pw-shake");
             setTimeout(()=>pwBox.classList.remove("pw-shake"),500);
         }
@@ -2557,6 +2586,7 @@ function refreshCurrentSection(){
     const active=document.querySelector(".section.active");
     if(!active)return;
     const name=active.id.replace("Section","");
+    // map section names to their render functions - add new ones here if you add sections
     const renders={games:buildGameGrid,hidden:renderHidden,emulated:renderEmulated,flash:renderFlash,proxies:renderProxies,recent:renderRecent,gameoftheday:renderGOTD,playtime:renderPlaytime,collections:renderCollections,stats:renderStats,favorites:renderFavorites,notes:renderNotes,settings:renderSettings};
     if(renders[name])renders[name]();
     toast("↻","Refreshed!");
